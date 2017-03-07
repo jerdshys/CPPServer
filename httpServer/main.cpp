@@ -14,7 +14,6 @@
 #include <netinet/ip.h>
 
 #define DEST_IP   "132.241.5.10"
-#define INADDR_ANY   "192.168.0.1"
 #define DEST_PORT 23
 #define MYPORT 3490
 
@@ -35,6 +34,7 @@
 
 int main (int argc, char *argv[]) {
     int sockfd, new_fd;  /* Écouter sur sock_fd, nouvelle connection sur new_fd */
+    int error;
     struct sockaddr_in my_addr;    /* Informations d'adresse */
     struct sockaddr_in their_addr; /* Informations d'adresse du client */
     struct sockaddr_in sin;
@@ -45,13 +45,17 @@ int main (int argc, char *argv[]) {
     
     my_addr.sin_family = AF_INET;         /* host byte order */
     my_addr.sin_port = htons(MYPORT);     /* short, network byte order */
-    my_addr.sin_addr.s_addr = inet_addr(DEST_IP); /* auto-remplissage avec mon IP */
+    my_addr.sin_addr.s_addr = INADDR_ANY; /* auto-remplissage avec mon IP */
     bzero(&(my_addr.sin_zero), 8);        /* zero pour le reste de struct */
     
     /* ne pas oublier les contrôles d'erreur pour ces appels: */
     bind(sockfd, (struct sockaddr *)&my_addr, sizeof(struct sockaddr));
     
-    listen(sockfd, BACKLOG);
+    if ((error = bind(sockfd, (struct sockaddr *) &my_addr, sizeof(my_addr))) < 0) {
+        perror("error bind socket");
+        exit(error);
+    }
+    listen(sockfd,5);
     
     sin_size = sizeof(struct sockaddr_in);
     new_fd = accept(sockfd, &their_addr, &sin_size);
