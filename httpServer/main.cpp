@@ -33,31 +33,40 @@
 
 
 int main (int argc, char *argv[]) {
-    int sockfd, new_fd;  /* Écouter sur sock_fd, nouvelle connection sur new_fd */
+    int sockfd, new_fd;
+    socklen_t clientLength;  /* Écouter sur sock_fd, nouvelle connection sur new_fd */
     int error;
-    struct sockaddr_in my_addr;    /* Informations d'adresse */
-    struct sockaddr_in their_addr; /* Informations d'adresse du client */
+    struct sockaddr_in server_addr;    /* Informations d'adresse */
+    struct sockaddr_in client_addr; /* Informations d'adresse du client */
     struct sockaddr_in sin;
 
     int sin_size;
+    memset(&server_addr, 0, sizeof(server_addr)); //zero out the sockaddr
+
     
     sockfd = socket(AF_INET, SOCK_STREAM, 0); /* Contrôle d'erreur! */
     
-    my_addr.sin_family = AF_INET;         /* host byte order */
-    my_addr.sin_port = htons(MYPORT);     /* short, network byte order */
-    my_addr.sin_addr.s_addr = INADDR_ANY; /* auto-remplissage avec mon IP */
-    bzero(&(my_addr.sin_zero), 8);        /* zero pour le reste de struct */
+    server_addr.sin_family = AF_INET;         /* défini le type d'adresse avec lesquelle notre socket va communiquer */
+    server_addr.sin_port = htons(MYPORT);     /* short, network byte order */
+    server_addr.sin_addr.s_addr = INADDR_ANY; /* accepte n'importe quelle type d'adresse : pour localhost uniquement :  inet_addr("127.0.0.1");*/
+    bzero(&(server_addr.sin_zero), 8);        /* zero pour le reste de struct */
+    
     
     /* ne pas oublier les contrôles d'erreur pour ces appels: */
-    bind(sockfd, (struct sockaddr *)&my_addr, sizeof(struct sockaddr));
+//    bind(sockfd, (struct sockaddr *)&server_addr, sizeof(struct sockaddr));
     
-    if ((error = bind(sockfd, (struct sockaddr *) &my_addr, sizeof(my_addr))) < 0) {
+    if ((error = bind(sockfd, (struct sockaddr *) &server_addr, sizeof(server_addr))) < 0) {
         perror("error bind socket");
         exit(error);
+    } else {
+        std::cout << "socket binded \n";
     }
-    listen(sockfd,5);
     
+    listen(sockfd,5);
+    clientLength = sizeof(client_addr);
+
     sin_size = sizeof(struct sockaddr_in);
-    new_fd = accept(sockfd, &their_addr, &sin_size);
+    new_fd = accept(sockfd, (struct sockaddr *) &client_addr, &clientLength);
+//    sockfd = accept(sockfd, &their_addr, &sin_size);
 
 }
