@@ -34,6 +34,7 @@
 
 int main (int argc, char *argv[]) {
     int sockfd, new_fd;
+    pid_t pid = 0;
     socklen_t clientLength;  /* Écouter sur sock_fd, nouvelle connection sur new_fd */
     int error;
     struct sockaddr_in server_addr;    /* Informations d'adresse */
@@ -66,7 +67,28 @@ int main (int argc, char *argv[]) {
     clientLength = sizeof(client_addr);
 
     sin_size = sizeof(struct sockaddr_in);
-    new_fd = accept(sockfd, (struct sockaddr *) &client_addr, &clientLength);
-//    sockfd = accept(sockfd, &their_addr, &sin_size);
-
+    while ((new_fd = accept(sockfd, (struct sockaddr *) &client_addr, &clientLength)) >= 0)
+    {
+        //...process new connection...
+        pid = fork();
+        if (pid < 0) {
+            perror("ERROR on fork");
+        }
+        if (pid == 0)  {
+            close(sockfd);
+            // handle incomming requests
+          //  error = hr->handleRequest(new_fd);
+            if (error < 0) {
+                perror("ERROR on handleRequest");
+                exit(error);
+            }
+            else { std::cout << "hanlde request success \n"; }
+            exit(0);
+        }
+        else close(new_fd);
+        
+        // close connection
+        close(new_fd);
+    }
 }
+
