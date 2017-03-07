@@ -77,6 +77,8 @@ int main (int argc, char *argv[]) {
         if (pid == 0)  {
             close(sockfd);
             // handle incomming requests
+            
+            // A FAIRE
           //  error = hr->handleRequest(new_fd);
             if (error < 0) {
                 perror("ERROR on handleRequest");
